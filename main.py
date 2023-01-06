@@ -1,22 +1,23 @@
-from urllib.parse import unquote, urlparse
-import PyPDF2
-import re
 import requests
 from bs4 import BeautifulSoup
-from os.path import basename
+import PyPDF2
 
-url = "https://www.capitol.hawaii.gov/sessions/session2022/testimony/"
-word = "doctor"
-# Make a request to the webpage
-response = requests.get(url)
+class PDFScraper:
+    def __init__(self, url):
+        self.url = url
 
-# Parse the HTML content
-soup = BeautifulSoup(response.text, 'html.parser')
+    def scrape_pdf_links(self):
+        # Make a request to the webpage
+        response = requests.get(self.url)
 
-# Find all the links to PDF files
-pdf_links = soup.find_all('a', href=re.compile(r".+[PDF|pdf]$"))
+        # Parse the HTML content
+        soup = BeautifulSoup(response.text, 'html.parser')
 
-# Print the PDF links
-for link in pdf_links:
-    print(link['href'])
+        # Find all the links to PDF files
+        pdf_links = soup.find_all('a', href=lambda x: x and x.endswith('.pdf'))
+
+        # Extract the PDF links
+        pdf_links = [link['href'] for link in pdf_links]
+
+        return pdf_links
 
