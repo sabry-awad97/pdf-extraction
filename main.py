@@ -143,7 +143,7 @@ if __name__ == '__main__':
 
     # Search the PDF files for the specified word
     searcher = PDFSearcher("https://www.capitol.hawaii.gov/")
-    results = searcher.search(pdf_links, args.word)
+    results =searcher.search(pdf_links, args.word)
 
     # Save the results to an Excel file
     searcher.save_to_excel(results, args.filename)
