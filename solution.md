@@ -15,3 +15,5 @@
 - The system limit the number of PDF files that the search method processes.
 
 - The system should be able to scrape multiple pages of the website for PDF files.
+
+- The system should be able to search for multiple words in the PDF files at the same time

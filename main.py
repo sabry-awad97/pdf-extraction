@@ -67,7 +67,7 @@ class PDFSearcher:
     def __init__(self):
         self.cache = {}
 
-    def search(self, pdf_links, word, limit=None):
+    def search(self, pdf_links: list[str], words: list[str], limit=None):
         results = []
         for i, link in enumerate(pdf_links):
             if limit is not None and i >= limit:
@@ -103,36 +103,38 @@ class PDFSearcher:
                     # Iterate over the lines
                     line_number = 1
                     for line in lines:
-                        # Search for the word in the line
-                        start = 0
-                        while True:
-                            start = line.find(word, start)
-                            if start == -1:
-                                break
+                        # Iterate over the words
+                        for word in words:
+                            # Search for the word in the line
+                            start = 0
+                            while True:
+                                start = line.find(word, start)
+                                if start == -1:
+                                    break
 
-                            # Calculate the end position
-                            end = start + len(word)
+                                # Calculate the end position
+                                end = start + len(word)
 
-                            # Create a Word object
-                            word_obj = Word(word, start, end)
+                                # Create a Word object
+                                word_obj = Word(word, start, end)
 
-                            # Create a Line object
-                            line_obj = Line(line, start, end, line_number)
+                                # Create a Line object
+                                line_obj = Line(line, start, end, line_number)
 
-                            # Add the Line object to the PDFPage object
-                            pdf_page.add_line(line_obj)
+                                # Add the Line object to the PDFPage object
+                                pdf_page.add_line(line_obj)
 
-                            # Add the search result to the list
-                            result = {
-                                'file': link,
-                                'page': pdf_page,
-                                'line': line_obj,
-                                'word': word_obj,
-                            }
-                            results.append(result)
+                                # Add the search result to the list
+                                result = {
+                                    'file': link,
+                                    'page': pdf_page,
+                                    'line': line_obj,
+                                    'word': word_obj,
+                                }
+                                results.append(result)
 
-                            # Continue searching from the end position
-                            start = end
+                                # Continue searching from the end position
+                                start = end
                         line_number += 1
             except Exception as e:
                 print(f'Error: {e}')
@@ -175,18 +177,24 @@ if __name__ == '__main__':
     # Parse the command line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('url', help='The URL of the website to scrape')
-    parser.add_argument('word', help='The word to search for in the PDF files')
-    parser.add_argument(
-        'filename', help='The name of the Excel file to save the results to')
+    parser.add_argument('words', nargs='+',
+                        help='Words to search for in the PDF files')
+    parser.add_argument('-p', '--pages', type=int, default=1,
+                        help='Number of pages to scrape')
+    parser.add_argument('-l', '--limit', type=int,
+                        help='Limit the number of PDF files to process')
+    parser.add_argument('-o', '--output',
+                        help='The name of the Excel file to save the results to')
+
     args = parser.parse_args()
 
     # Scrape the website for PDF links
     scraper = PDFScraper(args.url)
-    pdf_links = scraper.scrape_pdf_links()
+    pdf_links = scraper.scrape_pdf_links(args.pages)
 
     # Search the PDF files for the specified word
     searcher = PDFSearcher()
-    results = searcher.search(pdf_links, args.word, 1)
+    results = searcher.search(pdf_links, args.words, args.limit)
 
     for result in results:
         print(f'File: {result["file"]}')
@@ -197,4 +205,7 @@ if __name__ == '__main__':
         print(f'Word: {result["word"].text}')
 
     # Save the results to an Excel file
-    searcher.save_to_excel(results, args.filename)
+    searcher.save_to_excel(results, args.output)
+
+
+# py main.py https://www.capitol.hawaii.gov/sessions/session2022/testimony/ the a -p 1 -l 2 -o results.xlsx
