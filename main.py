@@ -1,3 +1,4 @@
+import argparse
 import io
 import requests
 from bs4 import BeautifulSoup
@@ -19,7 +20,7 @@ class PDFScraper:
 
             # Find all the links to PDF files
             pdf_links = soup.find_all(
-                'a', href=lambda x: x and x.endswith('.pdf'))
+                'a', href=lambda x: x and x.lower().endswith('.pdf'))
 
             # Extract the PDF links
             pdf_links = [link['href'] for link in pdf_links]
@@ -64,9 +65,19 @@ class PDFSearcher:
 
 
 # Test the classes
-url = 'https://www.capitol.hawaii.gov/sessions/session2022/testimony/'
-scraper = PDFScraper(url)
-pdf_links = scraper.scrape_pdf_links()
+url = ''
 
-searcher = PDFSearcher("https://www.capitol.hawaii.gov/")
-searcher.search(pdf_links, 'the')
+if __name__ == '__main__':
+    # Parse the command line arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument('url', help='The URL of the website to scrape')
+    parser.add_argument('word', help='The word to search for in the PDF files')
+    args = parser.parse_args()
+
+    # Scrape the website for PDF links
+    scraper = PDFScraper(args.url)
+    pdf_links = scraper.scrape_pdf_links()
+
+    # Search the PDF files for the specified word
+    searcher = PDFSearcher("https://www.capitol.hawaii.gov/")
+    searcher.search(pdf_links, args.word)
