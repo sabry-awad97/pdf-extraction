@@ -9,3 +9,5 @@
 - The system should return a list of search results, including the PDF file name, page number, line number, start and end positions, and the text of the search word.
 
 - The system should be able to cache the PDF files to avoid unnecessary downloads.
+
+- The system should save the search results to an Excel file.

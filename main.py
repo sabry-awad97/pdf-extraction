@@ -1,5 +1,6 @@
 import argparse
 import io
+import openpyxl
 import requests
 from bs4 import BeautifulSoup
 import PyPDF2
@@ -106,14 +107,34 @@ class PDFSearcher:
         return results
 
 
-# Test the classes
-url = ''
+def save_to_excel(self, results, filename):
+    # Create a new Excel workbook
+    workbook = openpyxl.Workbook()
+
+    # Add a new sheet
+    sheet = workbook.active
+    sheet.title = 'Results'
+
+    # Add the column titles
+    sheet.append(['File', 'Page', 'Line Number',
+                 'Line Start', 'Line End', 'Line'])
+
+    # Add the search results
+    for result in results:
+        sheet.append([result['file'], result['page'], result['line_number'],
+                     result['line_start'], result['line_end'], result['line']])
+
+    # Save the workbook
+    workbook.save(filename)
+
 
 if __name__ == '__main__':
     # Parse the command line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('url', help='The URL of the website to scrape')
     parser.add_argument('word', help='The word to search for in the PDF files')
+    parser.add_argument(
+        'filename', help='The name of the Excel file to save the results to')
     args = parser.parse_args()
 
     # Scrape the website for PDF links
@@ -122,4 +143,7 @@ if __name__ == '__main__':
 
     # Search the PDF files for the specified word
     searcher = PDFSearcher("https://www.capitol.hawaii.gov/")
-    searcher.search(pdf_links, args.word)
+    results = searcher.search(pdf_links, args.word)
+
+    # Save the results to an Excel file
+    searcher.save_to_excel(results, args.filename)
