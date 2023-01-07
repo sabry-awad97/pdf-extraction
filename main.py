@@ -36,6 +36,7 @@ class PDFSearcher:
         self.base_url = base_url
 
     def search(self, pdf_links, word):
+        results = []
         for link in pdf_links:
             try:
                 # Check if the link is a relative or an absolute URL
@@ -58,10 +59,43 @@ class PDFSearcher:
                     text = pdf.getPage(page).extractText()
 
                     # Search for the word in the text
-                    if word in text:
-                        print(f'Found "{word}" in page {page} of {link}')
+                    start = 0
+                    while True:
+                        start = text.find(word, start)
+                        if start == -1:
+                            break
+
+                        # Calculate the end position
+                        end = start + len(word)
+
+                        # Extract the line of text containing the search word
+                        line = text[:end].splitlines()[-1]
+
+                        # Calculate the line number
+                        line_number = len(text[:end].splitlines())
+
+                        # Calculate the start and end positions within the line
+                        line_start = start - text[:start].rfind('\n')
+                        line_end = end - text[:end].rfind('\n')
+
+                        # Add the search result to the list
+                        result = {
+                            'file': link,
+                            'page': page,
+                            'line_number': line_number,
+                            'line_start': line_start,
+                            'line_end': line_end,
+                            'line': line,
+                        }
+                        print(result)
+                        results.append(result)
+
+                        # Continue searching from the end position
+                        start = end
             except Exception as e:
                 print(f'Error: {e}')
+
+        return results
 
 
 # Test the classes

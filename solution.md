@@ -5,3 +5,5 @@
 - As a user, I want to specify the search word as a command line argument
 
 - The system should be able to search for a specific word in the text content of each PDF file.
+
+- The system should return a list of search results, including the PDF file name, page number, line number, start and end positions, and the text of the search word.
