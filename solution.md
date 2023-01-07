@@ -1,4 +1,8 @@
-# Solution
+# Requirements of the project
+
+As a researcher, I want to scrape a list of PDF files from a webpage and search for a specific word in each of these files, so that I can quickly find relevant information.
+
+The user story can be broken down into the following acceptance criteria:
 
 - The system should be able to scrape a list of PDF files from a given URL
 
