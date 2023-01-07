@@ -21,3 +21,5 @@
 - The system should be able to handle large PDF files efficiently, by reading them in chunks and extracting the text page by page
 
 - The system should be able to handle errors and exceptions gracefully, such as invalid URLs, network failures, and PDF parsing errors
+
+- The system should be able to display the progress of the scraping and searching operations to the user

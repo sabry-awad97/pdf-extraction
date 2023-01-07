@@ -6,6 +6,8 @@ from bs4 import BeautifulSoup
 import PyPDF2
 import urllib
 
+from tqdm import tqdm
+
 
 class Word:
     def __init__(self, text, start, end):
@@ -39,7 +41,7 @@ class PDFScraper:
 
     def scrape_pdf_links(self, pages=1):
         try:
-            for page in range(1, pages + 1):
+            for page in tqdm(range(1, pages + 1), desc='Scraping pages'):
                 # Make a request to the webpage
                 response = requests.get(self.url, params={'page': page})
 
@@ -69,9 +71,8 @@ class PDFSearcher:
 
     def search(self, pdf_links: list[str], words: list[str], limit=None):
         results = []
-        for i, link in enumerate(pdf_links):
-            if limit is not None and i >= limit:
-                break
+
+        for link in tqdm(pdf_links[:limit], desc='Searching PDFs'):
             try:
                 # Check if the PDF file is in the cache
                 if link in self.cache:
@@ -196,13 +197,13 @@ if __name__ == '__main__':
     searcher = PDFSearcher()
     results = searcher.search(pdf_links, args.words, args.limit)
 
-    for result in results:
-        print(f'File: {result["file"]}')
-        print(f'Page: {result["page"].page}')
-        print(f'Line: {result["line"].number}')
-        print(f'Line Start: {result["line"].start}')
-        print(f'Line End: {result["line"].end}')
-        print(f'Word: {result["word"].text}')
+    # for result in results:
+    #     print(f'File: {result["file"]}')
+    #     print(f'Page: {result["page"].page}')
+    #     print(f'Line: {result["line"].number}')
+    #     print(f'Line Start: {result["line"].start}')
+    #     print(f'Line End: {result["line"].end}')
+    #     print(f'Word: {result["word"].text}')
 
     # Save the results to an Excel file
     searcher.save_to_excel(results, args.output)
