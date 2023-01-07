@@ -67,9 +67,11 @@ class PDFSearcher:
     def __init__(self):
         self.cache = {}
 
-    def search(self, pdf_links, word):
+    def search(self, pdf_links, word, limit=None):
         results = []
-        for link in pdf_links:
+        for i, link in enumerate(pdf_links):
+            if limit is not None and i >= limit:
+                break
             try:
                 # Check if the PDF file is in the cache
                 if link in self.cache:
@@ -152,8 +154,6 @@ class PDFSearcher:
                       'Line Start',
                       'Line End',
                       'Word',
-                      'Word Start',
-                      'Word End'
                       ])
 
         # Add the search results to the sheet
@@ -165,8 +165,6 @@ class PDFSearcher:
                 result['line'].start,
                 result['line'].end,
                 result['word'].text,
-                result['word'].start,
-                result['word'].end,
             ])
 
         # Save the workbook
@@ -188,7 +186,7 @@ if __name__ == '__main__':
 
     # Search the PDF files for the specified word
     searcher = PDFSearcher()
-    results = searcher.search(pdf_links, args.word)
+    results = searcher.search(pdf_links, args.word, 2)
 
     for result in results:
         print(f'File: {result["file"]}')
@@ -197,8 +195,6 @@ if __name__ == '__main__':
         print(f'Line Start: {result["line"].start}')
         print(f'Line End: {result["line"].end}')
         print(f'Word: {result["word"].text}')
-        print(f'Word Start: {result["word"].start}')
-        print(f'Word End: {result["word"].end}')
 
     # Save the results to an Excel file
     searcher.save_to_excel(results, args.filename)
