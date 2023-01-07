@@ -11,3 +11,5 @@
 - The system should be able to cache the PDF files to avoid unnecessary downloads.
 
 - The system should save the search results to an Excel file.
+
+- The system limit the number of PDF files that the search method processes.

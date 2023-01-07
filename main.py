@@ -186,7 +186,7 @@ if __name__ == '__main__':
 
     # Search the PDF files for the specified word
     searcher = PDFSearcher()
-    results = searcher.search(pdf_links, args.word, 2)
+    results = searcher.search(pdf_links, args.word, 1)
 
     for result in results:
         print(f'File: {result["file"]}')
