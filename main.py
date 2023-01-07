@@ -8,8 +8,10 @@ import urllib
 
 
 class PDFScraper:
-    def __init__(self, url):
+    def __init__(self, url: str):
         self.url = url
+        self.base_url: str = urllib.parse.urlparse(
+            url).scheme + '://' + urllib.parse.urlparse(url).netloc
 
     def scrape_pdf_links(self):
         try:
@@ -26,6 +28,11 @@ class PDFScraper:
             # Extract the PDF links
             pdf_links = [link['href'] for link in pdf_links]
 
+            # Combine the base URL with the relative URLs
+            pdf_links = [urllib.parse.urljoin(self.base_url, link)
+                         if not urllib.parse.urlparse(link).scheme else link
+                         for link in pdf_links]
+
             return pdf_links
         except Exception as e:
             print(f'Error: {e}')
@@ -33,19 +40,13 @@ class PDFScraper:
 
 
 class PDFSearcher:
-    def __init__(self, base_url):
-        self.base_url = base_url
+    def __init__(self):
         self.cache = {}
 
-    def search(self, pdf_links, word):
+    def search(self, pdf_links: list[str], word: str):
         results = []
         for link in pdf_links:
             try:
-                # Check if the link is a relative or an absolute URL
-                if not urllib.parse.urlparse(link).scheme:
-                    # Combine the base URL with the relative URL
-                    link = urllib.parse.urljoin(self.base_url, link)
-
                 # Check if the PDF file is in the cache
                 if link in self.cache:
                     pdf = self.cache[link]
@@ -107,7 +108,7 @@ class PDFSearcher:
         return results
 
 
-def save_to_excel(self, results, filename):
+def save_to_excel(self, results: list[str], filename: str):
     # Create a new Excel workbook
     workbook = openpyxl.Workbook()
 
@@ -142,8 +143,8 @@ if __name__ == '__main__':
     pdf_links = scraper.scrape_pdf_links()
 
     # Search the PDF files for the specified word
-    searcher = PDFSearcher("https://www.capitol.hawaii.gov/")
-    results =searcher.search(pdf_links, args.word)
+    searcher = PDFSearcher()
+    results = searcher.search(pdf_links, args.word)
 
     # Save the results to an Excel file
     searcher.save_to_excel(results, args.filename)
