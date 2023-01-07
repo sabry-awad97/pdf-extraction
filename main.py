@@ -37,26 +37,26 @@ class PDFScraper:
         self.base_url: str = urllib.parse.urlparse(
             url).scheme + '://' + urllib.parse.urlparse(url).netloc
 
-    def scrape_pdf_links(self):
+    def scrape_pdf_links(self, pages=1):
         try:
-            # Make a request to the webpage
-            response = requests.get(self.url)
+            for page in range(1, pages + 1):
+                # Make a request to the webpage
+                response = requests.get(self.url, params={'page': page})
 
-            # Parse the HTML content
-            soup = BeautifulSoup(response.text, 'html.parser')
+                # Parse the HTML content
+                soup = BeautifulSoup(response.text, 'html.parser')
 
-            # Find all the links to PDF files
-            pdf_links = soup.find_all(
-                'a', href=lambda x: x and x.lower().endswith('.pdf'))
+                # Find all the links to PDF files
+                pdf_links = soup.find_all(
+                    'a', href=lambda x: x and x.lower().endswith('.pdf'))
 
-            # Extract the PDF links
-            pdf_links = [link['href'] for link in pdf_links]
+                # Extract the PDF links
+                pdf_links = [link['href'] for link in pdf_links]
 
-            # Combine the base URL with the relative URLs
-            pdf_links = [urllib.parse.urljoin(self.base_url, link)
-                         if not urllib.parse.urlparse(link).scheme else link
-                         for link in pdf_links]
-
+                # Combine the base URL with the relative URLs
+                pdf_links = [urllib.parse.urljoin(self.base_url, link)
+                             if not urllib.parse.urlparse(link).scheme else link
+                             for link in pdf_links]
             return pdf_links
         except Exception as e:
             print(f'Error: {e}')
