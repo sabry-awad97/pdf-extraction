@@ -17,3 +17,5 @@
 - The system should be able to scrape multiple pages of the website for PDF files.
 
 - The system should be able to search for multiple words in the PDF files at the same time
+
+- The system should be able to handle large PDF files efficiently, by reading them in chunks and extracting the text page by page
