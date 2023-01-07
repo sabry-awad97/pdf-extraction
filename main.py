@@ -7,6 +7,30 @@ import PyPDF2
 import urllib
 
 
+class Word:
+    def __init__(self, text, start, end):
+        self.text = text
+        self.start = start
+        self.end = end
+
+
+class Line:
+    def __init__(self, text, start, end, number):
+        self.text = text
+        self.start = start
+        self.end = end
+        self.number = number
+
+
+class PDFPage:
+    def __init__(self, page):
+        self.page = page
+        self.lines = []
+
+    def add_line(self, line):
+        self.lines.append(line)
+
+
 class PDFScraper:
     def __init__(self, url: str):
         self.url = url
@@ -43,7 +67,7 @@ class PDFSearcher:
     def __init__(self):
         self.cache = {}
 
-    def search(self, pdf_links: list[str], word: str):
+    def search(self, pdf_links, word):
         results = []
         for link in pdf_links:
             try:
@@ -64,69 +88,89 @@ class PDFSearcher:
                     self.cache[link] = pdf
 
                 # Iterate over all the pages
-                for page in range(pdf.getNumPages()):
+                for page_number in range(pdf.getNumPages()):
                     # Extract the text from the page
-                    text = pdf.getPage(page).extractText()
+                    text = pdf.getPage(page_number).extractText()
 
-                    # Search for the word in the text
-                    start = 0
-                    while True:
-                        start = text.find(word, start)
-                        if start == -1:
-                            break
+                    # Create a PDFPage object
+                    pdf_page = PDFPage(page_number)
 
-                        # Calculate the end position
-                        end = start + len(word)
+                    # Split the text into lines
+                    lines = text.splitlines()
 
-                        # Extract the line of text containing the search word
-                        line = text[:end].splitlines()[-1]
+                    # Iterate over the lines
+                    line_number = 1
+                    for line in lines:
+                        # Search for the word in the line
+                        start = 0
+                        while True:
+                            start = line.find(word, start)
+                            if start == -1:
+                                break
 
-                        # Calculate the line number
-                        line_number = len(text[:end].splitlines())
+                            # Calculate the end position
+                            end = start + len(word)
 
-                        # Calculate the start and end positions within the line
-                        line_start = start - text[:start].rfind('\n')
-                        line_end = end - text[:end].rfind('\n')
+                            # Create a Word object
+                            word_obj = Word(word, start, end)
 
-                        # Add the search result to the list
-                        result = {
-                            'file': link,
-                            'page': page,
-                            'line_number': line_number,
-                            'line_start': line_start,
-                            'line_end': line_end,
-                            'line': line,
-                        }
-                        print(result)
-                        results.append(result)
+                            # Create a Line object
+                            line_obj = Line(line, start, end, line_number)
 
-                        # Continue searching from the end position
-                        start = end
+                            # Add the Line object to the PDFPage object
+                            pdf_page.add_line(line_obj)
+
+                            # Add the search result to the list
+                            result = {
+                                'file': link,
+                                'page': pdf_page,
+                                'line': line_obj,
+                                'word': word_obj,
+                            }
+                            results.append(result)
+
+                            # Continue searching from the end position
+                            start = end
+                        line_number += 1
             except Exception as e:
                 print(f'Error: {e}')
 
         return results
 
+    def save_to_excel(self, results, filename):
+        # Create a new workbook
+        workbook = openpyxl.Workbook()
 
-def save_to_excel(self, results: list[str], filename: str):
-    # Create a new Excel workbook
-    workbook = openpyxl.Workbook()
+        # Add a sheet to the workbook
+        sheet = workbook.active
+        sheet.title = 'Results'
 
-    # Add a new sheet
-    sheet = workbook.active
-    sheet.title = 'Results'
+        # Add the column headers
+        sheet.append(['File',
+                      'Page',
+                      'Line',
+                      'Line Start',
+                      'Line End',
+                      'Word',
+                      'Word Start',
+                      'Word End'
+                      ])
 
-    # Add the column titles
-    sheet.append(['File', 'Page', 'Line Number',
-                 'Line Start', 'Line End', 'Line'])
+        # Add the search results to the sheet
+        for result in results:
+            sheet.append([
+                result['file'],
+                result['page'].page,
+                result['line'].number,
+                result['line'].start,
+                result['line'].end,
+                result['word'].text,
+                result['word'].start,
+                result['word'].end,
+            ])
 
-    # Add the search results
-    for result in results:
-        sheet.append([result['file'], result['page'], result['line_number'],
-                     result['line_start'], result['line_end'], result['line']])
-
-    # Save the workbook
-    workbook.save(filename)
+        # Save the workbook
+        workbook.save(filename)
 
 
 if __name__ == '__main__':
@@ -145,6 +189,16 @@ if __name__ == '__main__':
     # Search the PDF files for the specified word
     searcher = PDFSearcher()
     results = searcher.search(pdf_links, args.word)
+
+    for result in results:
+        print(f'File: {result["file"]}')
+        print(f'Page: {result["page"].page}')
+        print(f'Line: {result["line"].number}')
+        print(f'Line Start: {result["line"].start}')
+        print(f'Line End: {result["line"].end}')
+        print(f'Word: {result["word"].text}')
+        print(f'Word Start: {result["word"].start}')
+        print(f'Word End: {result["word"].end}')
 
     # Save the results to an Excel file
     searcher.save_to_excel(results, args.filename)
